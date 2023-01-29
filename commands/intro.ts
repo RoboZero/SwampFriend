@@ -16,6 +16,7 @@ module.exports = {
     .setName('intro')
     .setDescription('Shows you your introduction.'),
 
+
   // Command execution
   async execute(interaction: CommandInteraction) {
 

@@ -57,7 +57,7 @@ module.exports = {
 
 				const modal = new ModalBuilder()
 					.setCustomId(`saveintro:${userId}`)
-					.setTitle('My Modal');
+					.setTitle('Edit Introduction');
 				const titleActionRow = new ActionRowBuilder<ModalActionRowComponentBuilder>()
 					.addComponents(
 						new TextInputBuilder()
