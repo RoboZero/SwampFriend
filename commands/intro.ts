@@ -5,7 +5,8 @@ import {
   CommandInteraction,
   ButtonBuilder,
   ActionRowBuilder,
-  ButtonStyle
+  ButtonStyle,
+  User
 } from 'discord.js';
 
 module.exports = {
@@ -27,10 +28,17 @@ module.exports = {
       })
     }
     targetIndex = userIntros.length - 1;
+
+    const user: User = await interaction.client.users.fetch(userIntros[targetIndex].userId)
     const embed = new EmbedBuilder()
       .setColor(0x0099FF)
+      .setAuthor({
+        name: user.username,
+        iconURL: user.avatarURL() || undefined,
+      })
       .setTitle(`${userIntros[targetIndex].title}`)
       .setDescription(`${userIntros[targetIndex].description}`);
+
 
     const row = new ActionRowBuilder<ButtonBuilder>()
       .addComponents(
