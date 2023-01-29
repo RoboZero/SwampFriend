@@ -3,6 +3,10 @@
 A Discord.js bot written in TypeScript that lets you create an intro for yourself,
 allows you to seek out random intros of others, and view a person's intro.
 
+![image](https://user-images.githubusercontent.com/92892499/215334533-823f3721-95ab-458c-8884-78fb4b91d347.png)
+![image](https://user-images.githubusercontent.com/92892499/215334551-32d81533-ee29-4457-af21-3dba116c377e.png)
+
+
 ## Getting Started
 
 Create a `.env` file containing 3 tokens:
