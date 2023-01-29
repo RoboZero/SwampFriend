@@ -1,3 +1,4 @@
+import createIntroEmbed from '../functions/createIntroEmbed';
 import { userIntros } from '../data/user-intros';
 import {
   SlashCommandBuilder,
@@ -26,14 +27,7 @@ module.exports = {
     }
 
     const user: User = await interaction.client.users.fetch(userIntros[randomIndex].userId)
-    const embed = new EmbedBuilder()
-      .setColor(0x0099FF)
-      .setAuthor({
-        name: user.username,
-        iconURL: user.avatarURL() || undefined,
-      })
-      .setTitle(`${userIntros[randomIndex].title}`)
-      .setDescription(`${userIntros[randomIndex].description}`);
+    const embed = createIntroEmbed(user, randomIndex);
 
     await interaction.reply({
       embeds: [embed],
