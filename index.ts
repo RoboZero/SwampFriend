@@ -9,6 +9,7 @@ import ExtendedClient from './types/ExtendedClient';
 import Command from './types/Command';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as mongoose from 'mongoose';
 require('dotenv').config();
 
 // Create a new client instance
@@ -38,12 +39,29 @@ for (const file of eventFiles) {
   // If the event has the 'once' property set to true...
   if (event.once) {
     // Set the event using .once()
-    client.once(event.name, (...args) => event.execute(...args));
+    client.once(event.name, async(...args) => {
+      await startMongoDB();
+      event.execute(...args)
+    });
   } else {
     // Set the event using .on()
-    client.on(event.name, (...args) => event.execute(...args));
+    client.on(event.name, async(...args) => {
+      await startMongoDB();
+      event.execute(...args)
+    });
   }
 }
 
 // Log in to Discord with your client's token
 client.login(process.env.BOT_TOKEN);
+
+async function startMongoDB()
+{
+	mongoose.set('strictQuery', false);
+			await mongoose.connect(process.env.MONGO_SRV!, {
+				keepAlive: true,
+			}, () => {
+				console.log("MongoDB connection successful");
+			}
+			);
+}
