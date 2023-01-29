@@ -38,8 +38,7 @@ module.exports = {
       .addComponents(hobbiesInput);
 
     modal.addComponents(firstActionRow, secondActionRow);
-
-
+    
     await interaction.showModal(modal);
 
   },

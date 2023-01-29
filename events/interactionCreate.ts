@@ -1,4 +1,4 @@
-import { userIntros } from "../data/user-intros";
+import { setUserIntros, userIntros } from "../data/user-intros";
 import {
 	Events,
 	BaseInteraction,
@@ -12,13 +12,16 @@ import {
 	TextInputStyle, User, ButtonBuilder, ButtonStyle
 } from "discord.js";
 import ExtendedClient from "types/ExtendedClient";
+import UserIntro from "types/UserIntro";
+import { GuildHandler } from "databases/guilds/GuildHandler";
 import createIntroEmbed from "../functions/createIntroEmbed";
+import { guildHandler } from "../index";
 
 module.exports = {
 	// Triggers on any new interaction
 	name: Events.InteractionCreate,
 	async execute(interaction: BaseInteraction) {
-		// ========== CHAT INPUT COMMANDS ==========
+		// CHAT INPUT COMMANDS
 		if (interaction.isChatInputCommand()) {
 
 			const command = (interaction.client as ExtendedClient).commands.get(interaction.commandName);
@@ -42,20 +45,26 @@ module.exports = {
 				interaction.reply(`${interaction.user.username} clicked the button.`)
 
 			} else if (customId.includes('editintro')) {
+				userIntros.forEach((x:UserIntro)=>{
+					console.log(`Currently stored Intro: ${x.title}, ${x.description}`);
+				});
 
 				// Calculate some stuff
 				const userId = customId.substring(customId.indexOf(':') + 1, customId.length);
 				let targetIndex = userIntros.findIndex((userIntro) => userIntro.userId == userId);
-				if (targetIndex == -1) {
-					userIntros.push({
-						userId: userId,
-						title: `${interaction.user.username}'s Intro`,
-						description: "This is your description",
-						tags: ["tag1", "tag2", "tag3"]
-					})
-					targetIndex = userIntros.length - 1;
-				}
-				const colorString = userIntros[targetIndex].color;
+				let title = 'My Modal'
+				let description = 'About me'
+				let tags = ['Tag1']
+				let colorString: string = "1";
+
+				if(targetIndex >= 0 && targetIndex < userIntros.length){
+					title = userIntros[targetIndex].title;
+					description = userIntros[targetIndex].description;
+					tags = userIntros[targetIndex].tags;
+					colorString = userIntros[targetIndex].color ? userIntros[targetIndex].color?.toString()! : "";
+				} 
+
+				console.log(`Displayed Intro: ${title}, ${description}, ${tags}, ${colorString}`);
 
 				// Construct a modal
 				const modal = new ModalBuilder()
@@ -67,7 +76,7 @@ module.exports = {
 							.setCustomId('title')
 							.setLabel("Enter the title for your intro:")
 							.setStyle(TextInputStyle.Short)
-							.setValue(userIntros[targetIndex].title)
+							.setValue(title)
 					);
 				const descriptionActionRow = new ActionRowBuilder<ModalActionRowComponentBuilder>()
 					.addComponents(
@@ -75,7 +84,7 @@ module.exports = {
 							.setCustomId('description')
 							.setLabel("Enter your description:")
 							.setStyle(TextInputStyle.Paragraph)
-							.setValue(userIntros[targetIndex].description)
+							.setValue(description)
 					);
 				const tagsActionRow = new ActionRowBuilder<ModalActionRowComponentBuilder>()
 					.addComponents(
@@ -84,7 +93,7 @@ module.exports = {
 							.setLabel("Enter your tags (separate tags on newlines)")
 							.setStyle(TextInputStyle.Paragraph)
 							.setRequired(false)
-							.setValue(userIntros[targetIndex].tags.join("\n"))
+							.setValue(tags.join("\n"))
 					);
 				const colorActionRow = new ActionRowBuilder<ModalActionRowComponentBuilder>()
 					.addComponents(
@@ -93,7 +102,7 @@ module.exports = {
 							.setLabel("Enter a color (format: 0x000000)")
 							.setStyle(TextInputStyle.Short)
 							.setRequired(false)
-							.setValue(colorString ? colorString.toString() : "")
+							.setValue(colorString)
 					);
 				modal.addComponents(titleActionRow, descriptionActionRow, tagsActionRow, colorActionRow);
 				interaction.showModal(modal);
@@ -126,7 +135,8 @@ module.exports = {
 					content: `You entered: ${favoriteColor}\n and ${hobbies}`,
 					ephemeral: true
 				})
-
+				
+				
 			} else if (customId.includes('saveintro')) {
 
 				// Calculate some stuff
@@ -166,12 +176,15 @@ module.exports = {
 				// Create embed
 				const embed = createIntroEmbed(user, targetIndex);
 				// Respond
+
 				interaction.reply({
 					content: 'Your introduction was saved!',
 					components: [row],
 					embeds: [embed],
 					ephemeral: true
 				})
+
+				await guildHandler.storeUserData(userIntros[targetIndex], interaction.guild!);
 			} else {
 				console.log(`[WARNING]: No modal submit interaction handler exists for ${customId}`)
 			}
@@ -182,3 +195,12 @@ module.exports = {
 		}
 	},
 };
+
+/*function createDBEntry(intro: UserIntro[])
+{
+	//Create new entry to enter into database
+	const friendEntry = new friendSchema({
+		
+	})
+	friendEntry.save();
+}*/

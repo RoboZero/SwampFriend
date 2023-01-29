@@ -1,3 +1,7 @@
 import UserIntro from "../types/UserIntro";
 
-export const userIntros: UserIntro[] = [];
+export let userIntros: UserIntro[] = [];
+
+export function setUserIntros(v: UserIntro[]){
+  userIntros = v;
+}
