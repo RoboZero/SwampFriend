@@ -1,6 +1,8 @@
 import console from "console";
+import { userIntros } from "data/user-intros";
 import { Client, Guild, GuildMember, Snowflake, User } from "discord.js";
 import mongoose, { Model } from "mongoose";
+import UserIntro from "types/UserIntro";
 import { ChannelData } from "./ChannelData";
 import { GuildData } from "./GuildData";
 import GuildModel from "./GuildModel";
@@ -18,7 +20,6 @@ export class GuildParser{
         const allGuilds = new Map<string, GuildData>();
 
         this.client.guilds.cache.forEach(async (guild:Guild) => {
-            this.client = this.client;
             this.parseGuildFromDB(guild, allGuilds);
         });
 
@@ -46,16 +47,17 @@ export class GuildParser{
             }
 
             guildData.roles = new Set<string>(query[0].roles.map((value: String, index: number, array: String[]) => {
-                return value.toString()
+                return value.toString();
             }));
 
-            guildData.users = new Set<string>(query[0].users.map((value: String, index: number, array: String[]) => {
-                return value.toString()
-            }));
+            //for(const userIntro in query[0].userIntros){
+               // guildData.userIntro.push(userIntro);
+            //}
+            
 
             allGuilds.set(guild.id, guildData);
 
-            console.log(`Parsed guild: ${guildData.guild.name} with ${guildData.channels.size} channels, ${guildData.roles.size} channels, and ${guildData.users.size} users`);
+            console.log(`Parsed guild: ${guildData.guild.name} with ${guildData.channels.size} channels, ${guildData.roles.size} channels, and ${guildData.userIntros.length} users`);
         }
         
         console.log(`Done parsing guilds from MongoDB. Contains ${allGuilds.size} guilds`);
@@ -68,7 +70,7 @@ export class GuildParser{
             _id: guildData.guild.id,
             channels: Array.from(guildData.channels.values()),
             roles: Array.from(guildData.roles.values()),
-            users: Array.from(guildData.users.values())
+            userIntros: Array.from(guildData.userIntros.values())
         });
 
         console.log(`Added guild: ${guild.name}`);
@@ -76,18 +78,19 @@ export class GuildParser{
         return guildData;
     }
 
-    public async addMemberToGuildInDB(newMember:GuildMember){
-        this.addUserToGuildInDB(newMember.id, newMember.guild);
-    }
-
-    public async addUserToGuildInDB(userId:string, guild:Guild){
-        const query = await GuildModel.find({_id: guild.id });
+    public async addUserIntroToGuildInDB(userIntro: UserIntro, guild:Guild){
+        const filterQuery = {_id: guild.id }; //await GuildModel.find();
         
-        GuildModel.findOneAndUpdate(
-            query,
+        const updateQuery = await GuildModel.findOneAndUpdate(
+            filterQuery,
             {
                 $addToSet: {
-                    users: userId
+                    users: {
+                        title: userIntro.title,
+                        description: userIntro.description,
+                        tags: userIntro.tags,
+                        color: userIntro.color
+                    }
                 }
             },
             function (error: any, success: any) {
@@ -98,7 +101,7 @@ export class GuildParser{
                 }
             });
 
-        console.log(`Added user to guild. New query - ${query[0]} `);
+        console.log(`Added user to guild. New query - ${updateQuery} `);
     }
 
     public async removeGuildFromDB(guild: Guild): Promise<void> {

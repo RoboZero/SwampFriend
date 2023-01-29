@@ -1,4 +1,5 @@
 import { Client, Guild, GuildMember, Message, PartialGuildMember, User } from "discord.js";
+import UserIntro from "types/UserIntro";
 import { GuildData } from "./GuildData";
 import { GuildParser } from "./GuildParser";
 
@@ -29,13 +30,8 @@ export class GuildHandler {
         this.guilds.delete(guild.id);
     }
 
-    public onGuildMemberUpdate(oldMember:GuildMember | PartialGuildMember, newMember:GuildMember){
-        this.parser.addMemberToGuildInDB(newMember);
-        this.guilds.get(newMember.guild.id)?.users.add(newMember.id);
-    }
-
-    public storeUserData(user:User, guild:Guild){
-        this.parser.addUserToGuildInDB(user.id, guild);
+    public storeUserData(userIntro:UserIntro, guild:Guild){
+        this.parser.addUserIntroToGuildInDB(userIntro, guild);
     }
 
     public hasGuild(guild:Guild): boolean {
