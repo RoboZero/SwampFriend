@@ -9,9 +9,11 @@ import GuildModel from "./GuildModel";
 
 export class GuildParser{
     client: Client;
+    userIntroSet: Set<string>
 
     constructor(client: Client){
         this.client = client;
+        this.userIntroSet = new Set<string>();
     }
 
     public parseGuildsFromDB(): Map<string, GuildData> {
@@ -40,7 +42,11 @@ export class GuildParser{
         const query = await GuildModel.find({_id: guild.id});
 
         if(query.length){
+            console.log(`Guild query is returning items (length > 0)`);
+
             const guildData: GuildData = new GuildData(guild, this.client.user!);
+
+            console.log(`Query[0]: ${query[0]}`);
 
             for(const channel in query[0].channels){
                 guildData.channels.set(channel, new ChannelData(guildData));
@@ -50,14 +56,29 @@ export class GuildParser{
                 return value.toString();
             }));
 
-            //for(const userIntro in query[0].userIntros){
-               // guildData.userIntro.push(userIntro);
-            //}
             
+            for(let i = 0; i < query[0].userIntros.length; i++){
+                let userIntro = {
+                    userId: query[0].userIntros[i].userId.toString(),
+                    title: query[0].userIntros[i].title.toString(),
+                    description: query[0].userIntros[i].description.toString(),
+                    tags: Array.from(query[0].userIntros[i].tags.toString()),
+                    color: 0
+                };
 
+                if(this.userIntroSet.has(userIntro.userId)){
+                    //Duplicate
+                    continue;
+                }
+
+                console.log(`Intro obj pushed: ${userIntro.userId}, ${userIntro.title}, ${userIntro.description}`);
+
+                guildData.userIntros.push(userIntro);
+            }
+            
             allGuilds.set(guild.id, guildData);
 
-            console.log(`Parsed guild: ${guildData.guild.name} with ${guildData.channels.size} channels, ${guildData.roles.size} channels, and ${guildData.userIntros.length} users`);
+            console.log(`Parsed guild: ${guildData.guild.name} with ${guildData.channels.size} channels, ${guildData.roles.size} roles, and ${guildData.userIntros.length} user intros`);
         }
         
         console.log(`Done parsing guilds from MongoDB. Contains ${allGuilds.size} guilds`);
@@ -79,29 +100,38 @@ export class GuildParser{
     }
 
     public async addUserIntroToGuildInDB(userIntro: UserIntro, guild:Guild){
-        const filterQuery = {_id: guild.id }; //await GuildModel.find();
-        
-        const updateQuery = await GuildModel.findOneAndUpdate(
-            filterQuery,
+        console.log(`Adding user to database: User: ${userIntro.userId}, Guild: ${guild.name}`);
+
+        if(this.userIntroSet.has(userIntro.userId)){
+            await GuildModel.deleteOne({
+                _id: guild.id,
+                userIntros: {
+                    userId: userIntro.userId
+                }
+            }).then((value)=>{
+                console.log(`Tried to remove duplicate, removed ${value.deletedCount}`)
+            });
+        }
+
+        const updateQuery = await GuildModel.updateOne(
+            {
+                _id: guild.id,
+            },
             {
                 $addToSet: {
-                    users: {
+                    userIntros: {
+                        userId: userIntro.userId,
                         title: userIntro.title,
                         description: userIntro.description,
-                        tags: userIntro.tags,
-                        color: userIntro.color
+                        tags: Array.from(userIntro.tags.values()),
+                        color: userIntro.color?.toString()!
                     }
                 }
-            },
-            function (error: any, success: any) {
-                if (error) {
-                    console.log(error);
-                } else {
-                    console.log(success);
-                }
+            }).then((value)=>{
+                console.log(`Added user to guild. Result: ${value.modifiedCount} changes `);
             });
 
-        console.log(`Added user to guild. New query - ${updateQuery} `);
+        console.log(`New query - ${updateQuery} `);
     }
 
     public async removeGuildFromDB(guild: Guild): Promise<void> {

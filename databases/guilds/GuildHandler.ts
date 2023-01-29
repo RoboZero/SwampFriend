@@ -16,8 +16,8 @@ export class GuildHandler {
         this.dirty = true;
     }
 
-    public onClientReady(){
-        this.guilds = this.parser.parseGuildsFromDB();
+    public async onClientReady(){
+        this.guilds = await this.parser.parseGuildsFromDB();
     }
 
     public async onGuildCreate(guild:Guild){
@@ -30,8 +30,17 @@ export class GuildHandler {
         this.guilds.delete(guild.id);
     }
 
-    public storeUserData(userIntro:UserIntro, guild:Guild){
+    public async storeUserData(userIntro:UserIntro, guild:Guild): Promise<void>{
         this.parser.addUserIntroToGuildInDB(userIntro, guild);
+    }
+
+    public fetchUserData(guild:Guild): UserIntro[]{
+        if(this.guilds.has(guild.id)){
+            console.log(`Fetched user intros for guild ${guild.name}`);
+            return this.guilds.get(guild.id)!.userIntros;
+        } else{
+            return [];
+        }
     }
 
     public hasGuild(guild:Guild): boolean {

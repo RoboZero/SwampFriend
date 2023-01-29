@@ -1,6 +1,10 @@
 import UserIntro from "../types/UserIntro";
 
-export const userIntros: UserIntro[] = [
+export function setUserIntros(userIntr:UserIntro[]){
+  userIntros = userIntr;
+}
+
+export let userIntros: UserIntro[] = [
   {
     userId: "280521230182907904",
     title: "Brian's Intro",

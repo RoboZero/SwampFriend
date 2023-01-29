@@ -1,14 +1,15 @@
 import { Document, Schema, model } from 'mongoose';
 
 interface Guild extends Document {
-    _id: string;
-    channels: [string];
-    roles: [string];
+    _id: String;
+    channels: [String];
+    roles: [String];
     userIntros: [{
+        userId: String,
         title: String,
         description: String,
         tags:[String],
-        color:String
+        color:String,
     }]
 }
 
@@ -17,10 +18,12 @@ const GuildSchema: Schema = new Schema({
     channels: [String],
     roles: [String],
     userIntros: [{
+        userId: String,
         title: String,
         description: String,
         tags:[String],
-        color:String
+        color:String,
+        _id:false
     }]
 });
 

@@ -1,14 +1,16 @@
 // Require the necessary discord.js classes
-import { Client, Events, GatewayIntentBits, Collection } from 'discord.js'
+import { Client, Events, GatewayIntentBits, Collection, Guild } from 'discord.js'
 import ExtendedClient from './types/ExtendedClient';
 import Command from './types/Command';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as mongoose from 'mongoose';
+import { GuildHandler } from './databases/guilds/GuildHandler';
 require('dotenv').config();
 
 // Create a new client instance
 const client = new ExtendedClient({ intents: [GatewayIntentBits.Guilds] });
+export const guildHandler = new GuildHandler(client);
 
 // ADD ALL THE COMMANDS
 client.commands = new Collection();
@@ -36,13 +38,21 @@ for (const file of eventFiles) {
     // Set the event using .once()
     client.once(event.name, async(...args) => {
       await startMongoDB();
-      event.execute(...args)
+      guildHandler.onClientReady();
+      event.execute(...args);
     });
   } else {
     // Set the event using .on()
     client.on(event.name, async(...args) => {
-      await startMongoDB();
-      event.execute(...args)
+      event.execute(...args, guildHandler);
+    });
+
+    client.on(Events.GuildCreate, (guild:Guild) =>{
+      guildHandler.onGuildCreate(guild);
+    });
+
+    client.on(Events.GuildDelete, (guild:Guild) =>{
+      guildHandler.onGuildDelete(guild);
     });
   }
 }
@@ -50,13 +60,13 @@ for (const file of eventFiles) {
 // Log in to Discord with your client's token
 client.login(process.env.BOT_TOKEN);
 
-async function startMongoDB()
+async function startMongoDB():Promise<void>
 {
 	mongoose.set('strictQuery', false);
-			await mongoose.connect(process.env.MONGO_SRV!, {
-				keepAlive: true,
-			}, () => {
-				console.log("MongoDB connection successful");
-			}
-			);
+	await mongoose.connect(process.env.MONGO_SRV!, {
+		  keepAlive: true,
+	    }, (e) => {
+		    console.log(`If null, MongoDB connection was success \n: ${e}`);
+	    }
+	);
 }
