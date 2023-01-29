@@ -25,8 +25,8 @@ module.exports = {
       userIntros.push({
         userId: interaction.user.id,
         title: `${interaction.user.username}'s Intro`,
-        description: "[none]",
-        tags: []
+        description: "This is your description",
+        tags: ["tag1", "tag2", "tag3"]
       })
       targetIndex = userIntros.length - 1;
     }

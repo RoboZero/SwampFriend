@@ -18,7 +18,6 @@ module.exports = {
                     .setRequired(true)
             ),
 
-    //${interaction.user.username}
     // Command execution
     async execute(interaction: CommandInteraction) {
 
