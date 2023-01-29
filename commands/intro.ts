@@ -21,7 +21,14 @@ module.exports = {
   // Command execution
   async execute(interaction: CommandInteraction) {
 
-    let targetIndex = userIntros.findIndex((userIntro) => userIntro.userId == interaction.user.id);
+    //Essentially a static handler 
+		setUserIntros(guildHandler.fetchUserData(interaction.guild!));
+
+    let targetIndex = -1;
+    if(userIntros.length > 0){
+      targetIndex = userIntros.findIndex((userIntro) => userIntro.userId == interaction.user.id);
+    }
+    
     if (targetIndex == -1) {
       userIntros.push({
         userId: interaction.user.id,
@@ -31,9 +38,6 @@ module.exports = {
       })
       targetIndex = userIntros.length - 1;
     }
-
-    //Essentially a static handler 
-		setUserIntros(guildHandler.fetchUserData(interaction.guild!));
 
     const user: User = await interaction.client.users.fetch(userIntros[targetIndex].userId)
     const embed = createIntroEmbed(user, targetIndex);

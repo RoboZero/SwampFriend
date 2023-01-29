@@ -23,7 +23,6 @@ const GuildSchema: Schema = new Schema({
         description: String,
         tags:[String],
         color:String,
-        _id:false
     }]
 });
 

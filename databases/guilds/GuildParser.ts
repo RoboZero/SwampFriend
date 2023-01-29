@@ -1,7 +1,6 @@
 import console from "console";
 import { userIntros } from "data/user-intros";
 import { Client, Guild, GuildMember, Snowflake, User } from "discord.js";
-import mongoose, { Model } from "mongoose";
 import UserIntro from "types/UserIntro";
 import { ChannelData } from "./ChannelData";
 import { GuildData } from "./GuildData";
@@ -9,11 +8,9 @@ import GuildModel from "./GuildModel";
 
 export class GuildParser{
     client: Client;
-    userIntroSet: Set<string>
 
     constructor(client: Client){
         this.client = client;
-        this.userIntroSet = new Set<string>();
     }
 
     public parseGuildsFromDB(): Map<string, GuildData> {
@@ -42,8 +39,6 @@ export class GuildParser{
         const query = await GuildModel.find({_id: guild.id});
 
         if(query.length){
-            console.log(`Guild query is returning items (length > 0)`);
-
             const guildData: GuildData = new GuildData(guild, this.client.user!);
 
             console.log(`Query[0]: ${query[0]}`);
@@ -52,13 +47,12 @@ export class GuildParser{
                 guildData.channels.set(channel, new ChannelData(guildData));
             }
 
-            guildData.roles = new Set<string>(query[0].roles.map((value: String, index: number, array: String[]) => {
+            guildData.roles = new Set<string>(query[0].roles.map((value: String) => {
                 return value.toString();
             }));
 
-            
             for(let i = 0; i < query[0].userIntros.length; i++){
-                let userIntro = {
+                const userIntro = {
                     userId: query[0].userIntros[i].userId.toString(),
                     title: query[0].userIntros[i].title.toString(),
                     description: query[0].userIntros[i].description.toString(),
@@ -66,12 +60,7 @@ export class GuildParser{
                     color: 0
                 };
 
-                if(this.userIntroSet.has(userIntro.userId)){
-                    //Duplicate
-                    continue;
-                }
-
-                console.log(`Intro obj pushed: ${userIntro.userId}, ${userIntro.title}, ${userIntro.description}`);
+                console.log(`User Intro converted to code: ${userIntro.userId}, ${userIntro.title}, ${userIntro.description}`);
 
                 guildData.userIntros.push(userIntro);
             }
@@ -102,17 +91,6 @@ export class GuildParser{
     public async addUserIntroToGuildInDB(userIntro: UserIntro, guild:Guild){
         console.log(`Adding user to database: User: ${userIntro.userId}, Guild: ${guild.name}`);
 
-        if(this.userIntroSet.has(userIntro.userId)){
-            await GuildModel.deleteOne({
-                _id: guild.id,
-                userIntros: {
-                    userId: userIntro.userId
-                }
-            }).then((value)=>{
-                console.log(`Tried to remove duplicate, removed ${value.deletedCount}`)
-            });
-        }
-
         const updateQuery = await GuildModel.updateOne(
             {
                 _id: guild.id,
@@ -138,5 +116,16 @@ export class GuildParser{
         await GuildModel.deleteOne({_id: guild.id});
         
         console.log(`Removed guild: ${guild.name}`);
+    }
+
+    public async removeAllUserIntroFromGuild(guild:Guild){
+        await GuildModel.updateOne(
+            {_id:guild.id},
+            {
+                userIntros: []
+            }
+        );
+
+        console.log(`Removed user intros from ${guild.name}`);
     }
 }
