@@ -1,10 +1,5 @@
 // Require the necessary discord.js classes
-import {
-  Client,
-  Events,
-  GatewayIntentBits,
-  Collection
-} from 'discord.js'
+import { Client, Events, GatewayIntentBits, Collection } from 'discord.js'
 import ExtendedClient from './types/ExtendedClient';
 import Command from './types/Command';
 import * as fs from 'fs';

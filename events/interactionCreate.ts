@@ -1,12 +1,19 @@
+import { userIntros } from "../data/user-intros";
 import {
 	Events,
 	BaseInteraction,
 	ButtonInteraction,
 	ModalSubmitInteraction,
-	StringSelectMenuInteraction
+	StringSelectMenuInteraction,
+	ModalBuilder,
+	ActionRowBuilder,
+	ModalActionRowComponentBuilder,
+	TextInputBuilder,
+	TextInputStyle
 } from "discord.js";
 import ExtendedClient from "types/ExtendedClient";
-import friendSchema from './databases/friendSchema';
+import friendSchema from '../databases/friendSchema';
+import UserIntro from "types/UserIntro";
 module.exports = {
 	name: Events.InteractionCreate,
 	async execute(interaction: BaseInteraction) {
@@ -33,6 +40,43 @@ module.exports = {
 			// Branch on button's customId
 			if (customId == 'primary') {
 				interaction.reply(`${interaction.user.username} clicked the button.`)
+
+			} else if (customId.includes('editintro')) {
+
+				const userId = customId.substring(customId.indexOf(':') + 1, customId.length);
+				let targetIndex = userIntros.findIndex((userIntro) => userIntro.userId == userId);
+
+				const modal = new ModalBuilder()
+					.setCustomId(`saveintro:${userId}`)
+					.setTitle('My Modal');
+				const titleActionRow = new ActionRowBuilder<ModalActionRowComponentBuilder>()
+					.addComponents(
+						new TextInputBuilder()
+							.setCustomId('title')
+							.setLabel("Enter the title for your intro:")
+							.setStyle(TextInputStyle.Short)
+							.setValue(userIntros[targetIndex].title)
+					);
+				const descriptionActionRow = new ActionRowBuilder<ModalActionRowComponentBuilder>()
+					.addComponents(
+						new TextInputBuilder()
+							.setCustomId('description')
+							.setLabel("Enter your description:")
+							.setStyle(TextInputStyle.Paragraph)
+							.setValue(userIntros[targetIndex].description)
+					);
+				const tagsActionRow = new ActionRowBuilder<ModalActionRowComponentBuilder>()
+					.addComponents(
+						new TextInputBuilder()
+							.setCustomId('tags')
+							.setLabel("Enter your tags (separate tags on newlines)")
+							.setStyle(TextInputStyle.Paragraph)
+							.setRequired(false)
+							.setValue(userIntros[targetIndex].tags.join("\n"))
+					);
+				modal.addComponents(titleActionRow, descriptionActionRow, tagsActionRow);
+				interaction.showModal(modal);
+
 			} else {
 				console.log(`[WARNING]: No button interaction handler exists for ${customId}`)
 			}
@@ -61,7 +105,30 @@ module.exports = {
 					content: `You entered: ${favoriteColor}\n and ${hobbies}`,
 					ephemeral: true
 				})
-				createDBEntry(favoriteColor, hobbies);
+
+			} else if (customId.includes('saveintro')) {
+				const userId = customId.substring(customId.indexOf(':') + 1, customId.length);
+				let targetIndex = userIntros.findIndex((userIntro) => userIntro.userId == userId);
+				if (targetIndex == -1) {
+					userIntros.push({
+						userId: userId,
+						title: `${interaction.user.username}'s Intro`,
+						description: "[none]",
+						tags: []
+					})
+					targetIndex = userIntros.length - 1;
+				}
+				userIntros[targetIndex] = {
+					...userIntros[targetIndex],
+					title: interaction.fields.getTextInputValue('title'),
+					description: interaction.fields.getTextInputValue('description'),
+					tags: interaction.fields.getTextInputValue('tags').split('\n')
+				}
+				interaction.reply({
+					content: 'Intro saved',
+					ephemeral: true
+				})
+				//createDBEntry(userIntros);
 			} else {
 				console.log(`[WARNING]: No modal submit interaction handler exists for ${customId}`)
 			}
@@ -73,12 +140,11 @@ module.exports = {
 	},
 };
 
-function createDBEntry(color: string, hobby: string)
+/*function createDBEntry(intro: UserIntro[])
 {
 	//Create new entry to enter into database
 	const friendEntry = new friendSchema({
-		favoriteColor: color,
-		hobbies: hobby,
+		
 	})
 	friendEntry.save();
-}
+}*/
