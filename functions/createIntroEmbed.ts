@@ -6,9 +6,10 @@ export default function createIntroEmbed(user: User, userIntrosIndex: number): E
   userIntros[userIntrosIndex].tags.forEach((tag) => {
     tagString += `\`${tag}\` `
   })
+  let color = userIntros[userIntrosIndex].color || 0x0099FF;
 
   return new EmbedBuilder()
-    .setColor(0x0099FF)
+    .setColor(color)
     .setAuthor({
       name: user.username,
       iconURL: user.avatarURL() || undefined,

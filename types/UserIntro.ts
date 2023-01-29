@@ -4,4 +4,5 @@ export default interface UserIntro {
   title: string,
   description: string,
   tags: string[]
+  color?: number
 }
