@@ -15,17 +15,17 @@ import ExtendedClient from "types/ExtendedClient";
 import createIntroEmbed from "../functions/createIntroEmbed";
 
 module.exports = {
+	// Triggers on any new interaction
 	name: Events.InteractionCreate,
 	async execute(interaction: BaseInteraction) {
-		// CHAT INPUT COMMANDS
+		// ========== CHAT INPUT COMMANDS ==========
 		if (interaction.isChatInputCommand()) {
-			const command = (interaction.client as ExtendedClient).commands.get(interaction.commandName);
 
+			const command = (interaction.client as ExtendedClient).commands.get(interaction.commandName);
 			if (!command) {
 				console.error(`No command matching ${interaction.commandName} was found.`);
 				return;
 			}
-
 			try {
 				await command.execute(interaction);
 			} catch (error) {
@@ -33,7 +33,7 @@ module.exports = {
 				console.error(error);
 			}
 
-			// BUTTON COMMANDS
+			// ========== BUTTON COMMANDS ==========
 		} else if (interaction.isButton()) {
 			const customId = (interaction as ButtonInteraction).customId;
 
@@ -43,6 +43,7 @@ module.exports = {
 
 			} else if (customId.includes('editintro')) {
 
+				// Calculate some stuff
 				const userId = customId.substring(customId.indexOf(':') + 1, customId.length);
 				let targetIndex = userIntros.findIndex((userIntro) => userIntro.userId == userId);
 				if (targetIndex == -1) {
@@ -56,6 +57,7 @@ module.exports = {
 				}
 				const colorString = userIntros[targetIndex].color;
 
+				// Construct a modal
 				const modal = new ModalBuilder()
 					.setCustomId(`saveintro:${userId}`)
 					.setTitle('Edit Introduction');
@@ -100,7 +102,7 @@ module.exports = {
 				console.log(`[WARNING]: No button interaction handler exists for ${customId}`)
 			}
 
-			// STRING SELECT MENU COMMANDS
+			// ========== STRING SELECT MENU COMMANDS ==========
 		} else if (interaction.isStringSelectMenu()) {
 			const customId = (interaction as StringSelectMenuInteraction).customId;
 
@@ -112,7 +114,7 @@ module.exports = {
 				console.log(`[WARNING]: No string select menu interaction handler exists for ${customId}`)
 			}
 
-			// MODAL SUBMIT COMMANDS
+			// ========== MODAL SUBMIT COMMANDS ==========
 		} else if (interaction.isModalSubmit()) {
 			const customId = (interaction as ModalSubmitInteraction).customId;
 
@@ -126,6 +128,8 @@ module.exports = {
 				})
 
 			} else if (customId.includes('saveintro')) {
+
+				// Calculate some stuff
 				const userId = customId.substring(customId.indexOf(':') + 1, customId.length);
 				let targetIndex = userIntros.findIndex((userIntro) => userIntro.userId == userId);
 				if (targetIndex == -1) {
@@ -137,8 +141,9 @@ module.exports = {
 					})
 					targetIndex = userIntros.length - 1;
 				}
-
 				const colorNumber = parseInt(interaction.fields.getTextInputValue('color'))
+
+				// Update the user intro
 				userIntros[targetIndex] = {
 					...userIntros[targetIndex],
 					title: interaction.fields.getTextInputValue('title'),
@@ -147,8 +152,9 @@ module.exports = {
 					color: !isNaN(colorNumber) ? colorNumber : undefined
 				}
 
+				// Get the user's data
 				const user: User = await interaction.client.users.fetch(userIntros[targetIndex].userId)
-
+				// Create button
 				const row = new ActionRowBuilder<ButtonBuilder>()
 					.addComponents(
 						new ButtonBuilder()
@@ -157,7 +163,9 @@ module.exports = {
 							.setStyle(ButtonStyle.Primary)
 					);
 
+				// Create embed
 				const embed = createIntroEmbed(user, targetIndex);
+				// Respond
 				interaction.reply({
 					content: 'Your introduction was saved!',
 					components: [row],

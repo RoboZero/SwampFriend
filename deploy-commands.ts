@@ -1,9 +1,12 @@
+// deploy-commands.ts
+// Retrieved from discord.js.org
+
 const { REST, Routes } = require('discord.js');
 import * as fs from 'fs';
 require('dotenv').config();
 
 const commands = [];
-// Grab all the command files from the commands directory you created earlier
+// Grab all the command files from the commands directory
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.ts'));
 
 // Grab the SlashCommandBuilder#toJSON() output of each command's data for deployment
@@ -15,7 +18,7 @@ for (const file of commandFiles) {
 // Construct and prepare an instance of the REST module
 const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
 
-// and deploy your commands!
+// deploy commands
 (async () => {
 	try {
 		console.log(`Started refreshing ${commands.length} application (/) commands.`);
@@ -28,7 +31,7 @@ const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
 
 		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
 	} catch (error) {
-		// And of course, make sure you catch and log any errors!
+		// catch any possible errors
 		console.error(error);
 	}
 })();

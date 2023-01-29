@@ -1,4 +1,4 @@
-// Require the necessary discord.js classes
+// Import the necessary discord.js classes
 import { Client, Events, GatewayIntentBits, Collection } from 'discord.js'
 import ExtendedClient from './types/ExtendedClient';
 import Command from './types/Command';
