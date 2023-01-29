@@ -36,17 +36,25 @@ module.exports = {
         console.log(addOrRemove);
         if (addOrRemove == "add"){
             //we add the input as a tag
-            await interaction.reply(input + " is being added");
+            await interaction.reply({
+                content: input + " is being added",
+                ephemeral: true
+            });
         }
         else if (addOrRemove == "remove"){
             //remove tag from input
-            await interaction.reply(input + " is being removed");
+            await interaction.reply({
+                content: input + " is being removed",
+                ephemeral: true
+            });
         }
         else{
             //invalid option, you didn't write add or remove
-            await interaction.reply("Please choose between add and remove for goodness sake");
+            await interaction.reply({
+                content: "Please choose between add and remove for goodness sake",
+                ephemeral: true
+            });
         }
-
 
     },
 };
