@@ -9,9 +9,10 @@ import {
 	ActionRowBuilder,
 	ModalActionRowComponentBuilder,
 	TextInputBuilder,
-	TextInputStyle
+	TextInputStyle, User
 } from "discord.js";
 import ExtendedClient from "types/ExtendedClient";
+import createIntroEmbed from "../functions/createIntroEmbed";
 
 module.exports = {
 	name: Events.InteractionCreate,
@@ -48,8 +49,8 @@ module.exports = {
 					userIntros.push({
 						userId: userId,
 						title: `${interaction.user.username}'s Intro`,
-						description: "[none]",
-						tags: []
+						description: "This is your description",
+						tags: ["tag1", "tag2", "tag3"]
 					})
 					targetIndex = userIntros.length - 1;
 				}
@@ -87,7 +88,7 @@ module.exports = {
 					.addComponents(
 						new TextInputBuilder()
 							.setCustomId('color')
-							.setLabel("Enter a color (format as hex number)")
+							.setLabel("Enter a color (format: 0x000000)")
 							.setStyle(TextInputStyle.Short)
 							.setRequired(false)
 							.setValue(colorString ? colorString.toString() : "")
@@ -131,8 +132,8 @@ module.exports = {
 					userIntros.push({
 						userId: userId,
 						title: `${interaction.user.username}'s Intro`,
-						description: "[none]",
-						tags: []
+						description: "This is your description",
+						tags: ["tag1", "tag2", "tag3"]
 					})
 					targetIndex = userIntros.length - 1;
 				}
@@ -145,8 +146,13 @@ module.exports = {
 					tags: interaction.fields.getTextInputValue('tags').split('\n'),
 					color: !isNaN(colorNumber) ? colorNumber : undefined
 				}
+
+				const user: User = await interaction.client.users.fetch(userIntros[targetIndex].userId)
+
+				const embed = createIntroEmbed(user, targetIndex);
 				interaction.reply({
-					content: 'Intro saved',
+					content: 'Your introduction was saved!',
+					embeds: [embed],
 					ephemeral: true
 				})
 			} else {
