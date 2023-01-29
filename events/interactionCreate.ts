@@ -6,7 +6,7 @@ import {
 	StringSelectMenuInteraction
 } from "discord.js";
 import ExtendedClient from "types/ExtendedClient";
-import friendSchema from 'databases/friendSchema';
+import friendSchema from './databases/friendSchema';
 module.exports = {
 	name: Events.InteractionCreate,
 	async execute(interaction: BaseInteraction) {
@@ -61,12 +61,7 @@ module.exports = {
 					content: `You entered: ${favoriteColor}\n and ${hobbies}`,
 					ephemeral: true
 				})
-				//Create new entry to enter into database
-				const friendEntry = new friendSchema({
-					favoriteColor: favoriteColor,
-					hobbies: hobbies,
-				})
-				friendEntry.save();
+				createDBEntry(favoriteColor, hobbies);
 			} else {
 				console.log(`[WARNING]: No modal submit interaction handler exists for ${customId}`)
 			}
@@ -77,3 +72,13 @@ module.exports = {
 		}
 	},
 };
+
+function createDBEntry(color: string, hobby: string)
+{
+	//Create new entry to enter into database
+	const friendEntry = new friendSchema({
+		favoriteColor: color,
+		hobbies: hobby,
+	})
+	friendEntry.save();
+}
