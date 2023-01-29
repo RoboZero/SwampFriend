@@ -2,7 +2,6 @@
   "name": "discordtsbot",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "start": "ts-node index.ts",
     "register": "ts-node deploy-commands.ts"
