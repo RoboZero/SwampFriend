@@ -9,7 +9,7 @@ import {
 	ActionRowBuilder,
 	ModalActionRowComponentBuilder,
 	TextInputBuilder,
-	TextInputStyle, User
+	TextInputStyle, User, ButtonBuilder, ButtonStyle
 } from "discord.js";
 import ExtendedClient from "types/ExtendedClient";
 import createIntroEmbed from "../functions/createIntroEmbed";
@@ -149,9 +149,18 @@ module.exports = {
 
 				const user: User = await interaction.client.users.fetch(userIntros[targetIndex].userId)
 
+				const row = new ActionRowBuilder<ButtonBuilder>()
+					.addComponents(
+						new ButtonBuilder()
+							.setCustomId(`editintro:${userIntros[targetIndex].userId}`)
+							.setLabel('Edit')
+							.setStyle(ButtonStyle.Primary)
+					);
+
 				const embed = createIntroEmbed(user, targetIndex);
 				interaction.reply({
 					content: 'Your introduction was saved!',
+					components: [row],
 					embeds: [embed],
 					ephemeral: true
 				})
