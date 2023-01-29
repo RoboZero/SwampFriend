@@ -12,7 +12,7 @@ import {
 	TextInputStyle
 } from "discord.js";
 import ExtendedClient from "types/ExtendedClient";
-import friendSchema from '../databases/friendSchema';
+import friendSchema from '../databases/introSchema';
 import UserIntro from "types/UserIntro";
 module.exports = {
 	name: Events.InteractionCreate,
@@ -127,6 +127,7 @@ module.exports = {
 						tags: []
 					})
 					targetIndex = userIntros.length - 1;
+
 				}
 
 				const colorNumber = parseInt(interaction.fields.getTextInputValue('color'))

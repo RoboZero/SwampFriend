@@ -1,6 +1,6 @@
 import { EmbedBuilder } from '@discordjs/builders';
 import { userIntros } from '../data/user-intros';
-import friendSchema from '../databases/friendSchema';
+import friendSchema from '../databases/introSchema';
 import {
   SlashCommandBuilder,
   CommandInteraction,
@@ -29,9 +29,8 @@ module.exports = {
         tags: []
       })
       targetIndex = userIntros.length - 1;
-      //createDBEntry(userIntros);
       const friendEntry = new friendSchema({
-        favoriteColor: "a"
+        favoriteColor: ""
       })
       friendEntry.save();
     }
