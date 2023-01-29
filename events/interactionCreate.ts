@@ -53,6 +53,7 @@ module.exports = {
 					})
 					targetIndex = userIntros.length - 1;
 				}
+				const colorString = userIntros[targetIndex].color;
 
 				const modal = new ModalBuilder()
 					.setCustomId(`saveintro:${userId}`)
@@ -82,7 +83,16 @@ module.exports = {
 							.setRequired(false)
 							.setValue(userIntros[targetIndex].tags.join("\n"))
 					);
-				modal.addComponents(titleActionRow, descriptionActionRow, tagsActionRow);
+				const colorActionRow = new ActionRowBuilder<ModalActionRowComponentBuilder>()
+					.addComponents(
+						new TextInputBuilder()
+							.setCustomId('color')
+							.setLabel("Enter a color (format as hex number)")
+							.setStyle(TextInputStyle.Short)
+							.setRequired(false)
+							.setValue(colorString ? colorString.toString() : "")
+					);
+				modal.addComponents(titleActionRow, descriptionActionRow, tagsActionRow, colorActionRow);
 				interaction.showModal(modal);
 
 			} else {
@@ -126,11 +136,14 @@ module.exports = {
 					})
 					targetIndex = userIntros.length - 1;
 				}
+
+				const colorNumber = parseInt(interaction.fields.getTextInputValue('color'))
 				userIntros[targetIndex] = {
 					...userIntros[targetIndex],
 					title: interaction.fields.getTextInputValue('title'),
 					description: interaction.fields.getTextInputValue('description'),
-					tags: interaction.fields.getTextInputValue('tags').split('\n')
+					tags: interaction.fields.getTextInputValue('tags').split('\n'),
+					color: !isNaN(colorNumber) ? colorNumber : undefined
 				}
 				interaction.reply({
 					content: 'Intro saved',

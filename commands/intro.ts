@@ -27,8 +27,9 @@ module.exports = {
         description: "[none]",
         tags: []
       })
+      targetIndex = userIntros.length - 1;
     }
-    targetIndex = userIntros.length - 1;
+
 
     const user: User = await interaction.client.users.fetch(userIntros[targetIndex].userId)
     const embed = createIntroEmbed(user, targetIndex);
