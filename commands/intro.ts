@@ -1,5 +1,6 @@
 import { EmbedBuilder } from '@discordjs/builders';
 import { userIntros } from '../data/user-intros';
+import friendSchema from '../databases/friendSchema';
 import {
   SlashCommandBuilder,
   CommandInteraction,
@@ -7,7 +8,6 @@ import {
   ActionRowBuilder,
   ButtonStyle
 } from 'discord.js';
-import friendSchema from 'databases/friendSchema';
 
 module.exports = {
   // Command information
@@ -28,10 +28,7 @@ module.exports = {
       })
       //createDBEntry(userIntros);
       const friendEntry = new friendSchema({
-        userID: interaction.user.id,
-        title: `${interaction.user.username}'s Intro`,
-        description: "[none]",
-        tags: []
+        favoriteColor: "a"
       })
       friendEntry.save();
     }
